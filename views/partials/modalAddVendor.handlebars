@@ -1,0 +1,34 @@
+<div class="modal fadeIn" id="modalAddVendor" role="dialog" aria-labelledby="exampleModalCenterTitle"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" id="modalAddVendorDialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalAddVendorTitle"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                </button>
+            </div>
+            <div class="modal-body" id="modalAddVendorBody">
+                <form class="row needs-validation" id="addVendorForm" novalidate>
+
+                    <div class="col-12">
+                        <label for="validationCustom04" class="form-label">Vendor No.</label>
+                        <select class="form-select" id="vendorInput" required>
+                            <option selected disabled value="">Choose...</option>
+                        </select>
+                        <div class="invalid-feedback">
+                            Please select a valid vendor.
+                        </div>
+                    </div>
+
+                    <div class="col-12" style="margin-top:20px">
+                        <button type="submit" style="width: 100%" id="confirmAddVendor" class="btn btn-primary">Add
+                            Vendor</button>
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+    </div>
+</div>

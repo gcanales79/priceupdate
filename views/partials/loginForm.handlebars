@@ -1,0 +1,31 @@
+<aside class="col-sm-4">
+    <div class="card">
+        <article class="card-body">
+            <a href={{link}} class="float-right btn btn-outline-primary">{{title2}}</a>
+            <h4 class="card-title mb-4 mt-1">{{title}}</h4>
+            <form class="login needs-validation" method="get" id="loginForm" action="/sigin" novalidate>
+                <div class="form-group">
+                    <label>Your email</label>
+                    <input name="" class="form-control" placeholder="Email" id="email-input" type="email" required>
+                    <div class="invalid-feedback">
+                        Please provide an email
+                    </div>
+                </div> <!-- form-group// -->
+                <div class="form-group">
+                    <a class="float-right" href="#">Forgot?</a>
+                    <label>Your password</label>
+                    <input class="form-control" placeholder="******" id="password-input" type="password" required>
+                    <div class="invalid-feedback">
+                        Please provide a password
+                    </div>
+                </div> <!-- form-group// -->
+                <div class="form-group">
+
+                </div> <!-- form-group// -->
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary btn-block"> {{buttonTitle}}</button>
+                </div> <!-- form-group// -->
+            </form>
+        </article>
+    </div> <!-- card.// -->
+</aside>
