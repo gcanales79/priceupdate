@@ -60,8 +60,8 @@
                         Users
                     </a>
                 </li>
-                <li>
-                    <a href="/#">
+                <li {{#if reviewAdmin}}class="active"{{/if}}>
+                    <a href="/admin/review">
                         <i class="fas fa-dollar-sign"></i>
                         Review Prices
                     </a>
@@ -117,6 +117,7 @@
         integrity="sha512-jkvef+BAlqJubZdUhcyvaE84uD9XOoLR3e5GGX7YW7y8ywt0rwcGmTQHoxSMRzrJA3+Jh2T8Uy6f8TLU3WQhpQ=="
         crossorigin="anonymous"></script>
     <script type="text/javascript" src="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.10.23/b-1.6.5/b-colvis-1.6.5/b-flash-1.6.5/b-html5-1.6.5/datatables.min.js"></script>
+    <script src="https://unpkg.com/read-excel-file@4.x/bundle/read-excel-file.min.js"></script>
     <script src="/assets/js/bootstrap-notify.js"></script>
     <script src="/assets/js/pagination.js"></script>
     <script src="/assets/js/main.js"></script>

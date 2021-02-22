@@ -4,9 +4,9 @@ const { check, validationResult } = require("express-validator");
 var passport = require("../config/passport");
 var isAuthenticated = require("../config/middleware/isAuthenticated");
 var isAuthenticatedAdmin = require("../config/middleware/isAuthenticatedAdmin");
-const Sequelize = require('sequelize');
+const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
-const moment = require('moment-timezone');
+const moment = require("moment-timezone");
 
 module.exports = function (app) {
   //User Signup
@@ -77,7 +77,7 @@ module.exports = function (app) {
           message: "Usuario correcto",
           alert: "Success",
           user_role: user.role,
-          user_id:user.id
+          user_id: user.id,
         });
       });
     })(req, res, next);
@@ -211,39 +211,161 @@ module.exports = function (app) {
   );
 
   //Get Items by User
-  app.get("/get-items/:user",isAuthenticated, (req, res) => {
+  app.get("/get-items/:user", isAuthenticated, (req, res) => {
     const { user } = req.params;
     db.Vendor.findAll({
       include: [db.User, db.Item],
       where: {
         UserId: user,
       },
-    }).then((data) => {
-      let items=[]
-      for (let i = 0; i < data.length; i++) {
-        for(let j=0; j < data[i].Items.length; j++) {
-        items.push(data[i].Items[j].item_no)
+    })
+      .then((data) => {
+        let items = [];
+        for (let i = 0; i < data.length; i++) {
+          for (let j = 0; j < data[i].Items.length; j++) {
+            items.push(data[i].Items[j].item_no);
+          }
         }
-      }
-      res.json(items)
-      
-    }).catch((err)=>{
-      console.log(err)
-    });
+        res.json(items);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   });
 
   //Get Item princing
-  app.get("/get-pricing/:item_no",(req,res)=>{
-    const {item_no}=req.params;
+  app.get("/get-pricing/:item_no", isAuthenticated, (req, res) => {
+    const { item_no } = req.params;
     db.Pricing.findAll({
-      where:{
-        item_no:item_no,
+      where: {
+        item_no: item_no,
       },
-      order:[["starting_date","DESC"]]
-    }).then((data)=>{
-      res.json(data)
-    }).catch((err)=>{
-      console.log(err)
+      order: [["starting_date", "DESC"]],
     })
-  })
+      .then((data) => {
+        res.json(data);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  });
+
+  //Create New Pricing
+  app.post("/post-new-pricing", isAuthenticated, (req, res) => {
+    const {
+      item_no,
+      starting_date,
+      ending_date,
+      base_price,
+      surcharge,
+      currency,
+      unit_measure,
+    } = req.body;
+    db.Pricing.create({
+      item_no: item_no,
+      starting_date: starting_date,
+      ending_date: ending_date,
+      base_price: base_price,
+      surcharge: surcharge,
+      currency: currency,
+      unit_measure: unit_measure,
+    })
+      .then((data) => {
+        if (!data) {
+          res.send({
+            message: "The price update was not uploaded",
+            alert: "Error",
+          });
+        } else {
+          res.send({ message: "Price update successfully", alert: "Success" });
+        }
+      })
+      .catch((err) => {
+        res.send({ message: "Server error", alert: "Error", err: err });
+      });
+  });
+
+  //Get All Prices
+  app.get("/get-all-prices", isAuthenticatedAdmin, (req, res) => {
+    db.Pricing.findAll({
+      order: [
+        ["item_no", "ASC"],
+        ["starting_date", "DESC"],
+      ],
+    })
+      .then((data) => {
+        res.json(data);
+      })
+      .catch((err) => {
+        console.log(err);
+        console;
+      });
+  });
+
+  //Get Pending Approval prices
+  app.get("/get-price-pending", isAuthenticatedAdmin, (req, res) => {
+    db.Pricing.findAll({
+      where: {
+        confirmed: false,
+      },
+    })
+      .then((data) => {
+        res.json(data);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  });
+
+  //Get Item data
+  app.get("/get-item-info/:item_no", isAuthenticated, (req, res) => {
+    const { item_no } = req.params;
+    db.Item.findOne({
+      where: {
+        item_no: item_no,
+      },
+    })
+      .then((data) => {
+        res.json(data);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  });
+
+  //Post New Pricing
+  app.post("/new-pricing", isAuthenticated, (req, res) => {
+    const {
+      item_no,
+      starting_date,
+      ending_date,
+      base_price,
+      surcharge,
+      ItemId,
+    }=req.body;
+    db.Pricing.create({
+      item_no: item_no,
+      starting_date: starting_date,
+      ending_date: ending_date,
+      base_price: base_price,
+      surcharge: surcharge,
+      ItemId: ItemId,
+    })
+      .then((data) => {
+        if (!data) {
+          res.send({
+            message: "Pricing was not uploaded correctly",
+            alert: "Error",
+          });
+        } else {
+          res.send({
+            message: "Pricing submitted successfully",
+            alert: "Success",
+          });
+        }
+      })
+      .catch((err) => {
+        res.send({ message: "Server error", alert: "Error", err: err });
+      });
+  });
 };

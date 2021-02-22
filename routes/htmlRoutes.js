@@ -101,6 +101,20 @@ module.exports = function (app) {
     }
   });
 
+  //Admin Review Prices
+  app.get("/admin/review",isAuthenticated,(req,res)=>{
+    const { role } = req.user;
+    if (role === "user") {
+      res.redirect("/");
+    } else if (role === "admin") {
+      res.render("reviewAdmin", {
+        admin: true,
+        reviewAdmin: true,
+        jsfile: "reviewAdmin.js",
+      });
+    }
+  })
+
   //404 Not Found
   app.get("*", function (req, res) {
     res.render("404");

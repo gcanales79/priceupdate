@@ -20,22 +20,26 @@ module.exports = function(sequelize, DataTypes) {
       surcharge: {
         type: DataTypes.DECIMAL(10,5),
       },
-      comments: {
-        type: DataTypes.TEXT,
-      },
-      currency: {
-        type: DataTypes.STRING,
-      },
-      unit_measure: {
-        type: DataTypes.STRING,
-      },
       confirmed:{
         type:DataTypes.BOOLEAN,
         defaultValue:false,
-      }
+      },
+      comments: {
+        type: DataTypes.TEXT,
+      },
+      
      
     });
   
+    Pricing.associate = function (models) {
+      Pricing.belongsTo(models.Item, {
+        foreignKey: {
+  
+        },
+      });
+      
+  
+    };
  
      
   

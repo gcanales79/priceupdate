@@ -30,7 +30,7 @@ $(document).ready(function () {
           let endingDate = moment(items[0].ending_date);
           let expiringDay = today.diff(endingDate, "days");
           //console.log(expiringDay)
-          let expired = expiringDay > 0 ? "Yes" : "No";
+          let expired = expiringDay > 0 ? "Expired" : "Valid";
           let pn_info = {
             item_no: data[i],
             starting_date: moment(items[0].starting_date).format("DD-MM-YYYY"),
