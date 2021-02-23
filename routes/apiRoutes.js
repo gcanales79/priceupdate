@@ -7,6 +7,9 @@ var isAuthenticatedAdmin = require("../config/middleware/isAuthenticatedAdmin");
 const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
 const moment = require("moment-timezone");
+var fs = require("fs");
+var multer = require("multer");
+var upload = multer({ dest: "./priceFiles" });
 
 module.exports = function (app) {
   //User Signup
@@ -250,6 +253,32 @@ module.exports = function (app) {
       });
   });
 
+  //Get Valid Pricing
+  app.get("/get-valid-pricing/:item_no", isAuthenticated, (req, res) => {
+    const { item_no } = req.params;
+    let today = Date.now();
+    console.log(today);
+    db.Pricing.findAll({
+      include: [db.Item],
+      where: {
+        item_no: item_no,
+        starting_date: {
+          [Op.lte]: today,
+        },
+        ending_date: {
+          [Op.gte]: today,
+        },
+      },
+      order: [["starting_date", "DESC"]],
+    })
+      .then((data) => {
+        res.json(data);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  });
+
   //Create New Pricing
   app.post("/post-new-pricing", isAuthenticated, (req, res) => {
     const {
@@ -305,8 +334,9 @@ module.exports = function (app) {
   //Get Pending Approval prices
   app.get("/get-price-pending", isAuthenticatedAdmin, (req, res) => {
     db.Pricing.findAll({
+      include: [db.Item],
       where: {
-        confirmed: false,
+        confirmed: "Submitted",
       },
     })
       .then((data) => {
@@ -342,7 +372,8 @@ module.exports = function (app) {
       base_price,
       surcharge,
       ItemId,
-    }=req.body;
+      confirmed,
+    } = req.body;
     db.Pricing.create({
       item_no: item_no,
       starting_date: starting_date,
@@ -366,6 +397,103 @@ module.exports = function (app) {
       })
       .catch((err) => {
         res.send({ message: "Server error", alert: "Error", err: err });
+        console.log(err);
       });
   });
+
+  //Find if a contract exist for the date
+  app.get(
+    "/find-a-current-price/:item_no/:starting_date/:ending_date",
+    (req, res) => {
+      //const { starting_date, ending_date } = req.body;
+      const { item_no, starting_date, ending_date } = req.params;
+      db.Pricing.findOne({
+        where: {
+          item_no: item_no,
+          [Op.or]: [
+            {
+              starting_date: {
+                [Op.gte]: starting_date,
+                [Op.lte]: ending_date,
+              },
+            },
+            {
+              ending_date: {
+                [Op.gte]: starting_date,
+                [Op.lte]: ending_date,
+              },
+            },
+          ],
+        },
+      })
+        .then((data) => {
+          res.json(data);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
+  );
+
+  //Upload Price File from Supplier The key is priceFile
+  app.post(
+    "/fileupload",
+    upload.single("priceFile"),
+    function (req, res, next) {
+      //console.log(req.file);
+      console.log(req.body)
+      const { UserId } = req.body;
+      let originalName = req.file.originalname;
+      let fileSplit = originalName.split(".");
+      let newName = req.file.filename;
+      let fileExt = fileSplit[1];
+      let path = req.file.destination;
+      let tempPath = `${path}/${newName}`;
+      let targetPath = `${path}/${newName}.${fileExt}`;
+      let modifyPath = targetPath.replace(/\s+/g, "-").toLowerCase();
+      fs.rename(tempPath.replace(/\/\//g, "/"), modifyPath, function (err) {
+        if (err) {
+          res.send({
+            message: "Error uploading the file please try again",
+            alert: "Error",
+          });
+        } else {
+          db.File.create({
+            file_name: `${newName}.${fileExt}`,
+            UserId: UserId,
+          })
+            .then((data) => {
+              if (!data) {
+                res.send({
+                  message: "Error uploading the file",
+                  alert: "Error",
+                });
+              } else {
+                res.send({
+                  message: "File Uploaded Successfully",
+                  alert: "Success",
+                });
+              }
+            })
+            .catch((err) => {
+              res.send({ message: "Server Error", alert: "Error", err: err });
+              console.log(err)
+            });
+        }
+      });
+    }
+  );
+
+  app.get("/download/:fileName", function (req, res) {
+    const { fileName } = req.params;
+    const file = `./priceFiles/${fileName}`;
+    res.download(file,`${fileName}`,function(err){
+      if (err){
+        res.send({message:"File not found",alert:"Error"})
+      }else{
+        console.log("Your file has been downloaded")
+      }
+    });
+  });
 };
+

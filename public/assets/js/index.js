@@ -7,8 +7,8 @@ $(document).ready(function () {
 
     //console.log(data)
     for (let i = 0; i < data.length; i++) {
-      $.get(`/get-pricing/${data[i]}`, () => {}).then((items) => {
-        //console.log(items)
+      $.get(`/get-valid-pricing/${data[i]}`, () => {}).then((items) => {
+       // console.log(items)
         if (items.length === 0) {
           let pn_info = {
             item_no: data[i],
@@ -18,16 +18,16 @@ $(document).ready(function () {
             surcharge: "NA",
             currency: "NA",
             unit_measure: "NA",
-            expired: "NA",
             confirm: "NA",
             comments: "NA",
           };
           //console.log(pn_info);
           vendor_items.push(pn_info);
         } else {
-          let confirm = items[0].confirm ? "Yes" : "No";
           let today = moment();
+          //console.log(today)
           let endingDate = moment(items[0].ending_date);
+          //console.log(endingDate)
           let expiringDay = today.diff(endingDate, "days");
           //console.log(expiringDay)
           let expired = expiringDay > 0 ? "Expired" : "Valid";
@@ -37,10 +37,9 @@ $(document).ready(function () {
             ending_date: moment(items[0].ending_date).format("DD-MM-YYYY"),
             base_price: items[0].base_price,
             surcharge: items[0].surcharge,
-            currency: items[0].currency,
-            unit_measure: items[0].unit_measure,
-            expired: expired,
-            confirm: confirm,
+            currency: items[0].Item.currency,
+            unit_measure: items[0].Item.unit_measure,
+            confirm: items[0].confirmed,
             comments: items[0].comments,
           };
           //console.log(pn_info);
@@ -92,7 +91,7 @@ $(document).ready(function () {
       //Status
       unitStatusCol = $("<td>");
       unitStatusCol.text(data[i].expired);
-      newRow.append(unitStatusCol);
+      //newRow.append(unitStatusCol);
       //Price confirmed
       confirmCol = $("<td>");
       confirmCol.text(data[i].confirm);

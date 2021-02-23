@@ -1,4 +1,4 @@
-<form class="row needs-validation prueba" id="submitPrice" novalidate>
+<form class="row needs-validation prueba" id="submitPrice" method="post" enctype="multipart/form-data" novalidate>
     <div>
         <h2>Upload New Prices Excel File</h2>
     </div>
@@ -62,7 +62,7 @@
     </div-->
 
     <div class="col-md-8" style="margin-top:20px">
-        <input type="file" id="input" accept=".xlsx, .xls"/>
+        <input type="file" id="input" name="priceFile" accept=".xlsx, .xls"/>
     </div>
 
 

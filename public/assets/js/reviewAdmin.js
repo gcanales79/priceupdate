@@ -50,10 +50,10 @@ $(document).ready(function () {
               totalPriceCol.text(totalPrice);
               //Currency
               currencyCol = $("<td>");
-              currencyCol.text(data[i].currency);
+              currencyCol.text(data[i].Item.currency);
               //Unit of Measure
               measureCol = $("<td>");
-              measureCol.text(data[i].unit_measure);
+              measureCol.text(data[i].Item.unit_measure);
               //Approve Button
               buttonApprove = $("<button>");
               buttonApprove.attr("type", "button");

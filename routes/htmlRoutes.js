@@ -25,6 +25,7 @@ module.exports = function (app) {
           jsfile: "index.js",
           user: true,
           items:items,
+          homeUser:true,
         });
       } else if (role === "admin") {
         res.redirect("/admin");
@@ -41,6 +42,7 @@ module.exports = function (app) {
       res.render("userPrice", {
         jsfile: "userPrice.js",
         user: true,
+        priceUser:true
       });
     } else if (role === "admin") {
       res.redirect("/admin");

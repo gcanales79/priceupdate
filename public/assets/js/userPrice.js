@@ -109,7 +109,7 @@ $(document).ready(function () {
       $("#input").val(null);
     }
     readXlsxFile(input.files[0], { schema }).then(({ rows, errors }) => {
-      //console.log(rows);
+      console.log(rows);
       // `errors` have shape `{ row, column, error, value }`.
       //console.log(errors);
       if (errors.length > 0) {
@@ -122,7 +122,7 @@ $(document).ready(function () {
         } else if (errors[0].error === "invalid") {
           $("#fileError").addClass("alert alert-danger");
           $("#fileError").text(
-            `The file has an ${errors[0].error} value in column ${errors[0].column}. Please Correct the file`
+            `The file has an ${errors[0].error} value in column ${errors[0].column}. Please correct the file`
           );
           $("#input").val(null);
         } else {
@@ -154,8 +154,7 @@ $(document).ready(function () {
           $.get(`/get-items/${userId}`, () => {}).then((data) => {
             let errorItem = false;
             for (let i = 0; i < rows.length; i++) {
-           
-              let itemFound = $.inArray((rows[i].item_no).toString(), data);
+              let itemFound = $.inArray(rows[i].item_no.toString(), data);
               //console.log(itemFound)
               if (itemFound < 0) {
                 errorItem = true;
@@ -178,27 +177,46 @@ $(document).ready(function () {
   });
 
   //Submitt file
-  $("#buttonPrice").on("click", function(event){
+  $("#buttonPrice").on("click", function (event) {
     event.preventDefault();
     readXlsxFile(input.files[0], { schema }).then(({ rows, errors }) => {
-      for(let i = 0; i < rows.length; i++){
-        $.get(`/get-item-info/${rows[i].item_no}`,()=>{}).then((data)=>{
-          $.post(`/new-pricing`,{
-            item_no:rows[i].item_no,
-            starting_date:rows[i].starting_date,
-            ending_date: rows[i].ending_date,
-            base_price:rows[i].base_price,
-            surcharge: rows[i].surcharge,
-            ItemId:data.id
-          }).then((response)=>{
-            notificationToast(response.alert, response.message);
-            $("#input").val(null);
-          })
-        })
-      }
-    })
+      for (let i = 0; i < rows.length; i++) {
+        console.log(rows[i].item_no);
 
-  })
+        $.get(
+          `/find-a-current-price/${rows[i].item_no}/${rows[i].starting_date}/${rows[i].ending_date}`,
+          () => {}
+        ).then((contract) => {
+          //console.log(contract);
+          if (contract) {
+            let newDiv = $("<div>");
+            newDiv.addClass("alert alert-danger");
+            newDiv.text(
+              `The part number ${rows[i].item_no} has a valid contract. The file was not submitted. `
+            );
+            $("#fileError").append(newDiv);
+            $("#input").val(null);
+          }
+          if (i === rows.length - 1) {
+            var formData = new FormData();
+            var file = document.getElementById("input").files[0];
+            formData.append("priceFile", file);
+            formData.append("UserId",userId);
+            $.ajax({
+              type: "POST",
+              url:"/fileupload",
+              data:formData,
+              processData:false,
+              contentType: false,
+              success: function(data){
+                notificationToast(data.alert, data.message);
+              }
+            })
+          }
+        });
+      }
+    });
+  });
 
   function notificationToast(result, message) {
     //console.log(message)

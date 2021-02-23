@@ -21,8 +21,8 @@ module.exports = function(sequelize, DataTypes) {
         type: DataTypes.DECIMAL(10,5),
       },
       confirmed:{
-        type:DataTypes.BOOLEAN,
-        defaultValue:false,
+        type:DataTypes.STRING,
+        defaultValue:"Submitted",
       },
       comments: {
         type: DataTypes.TEXT,
