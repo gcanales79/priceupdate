@@ -180,9 +180,10 @@ $(document).ready(function () {
   $("#buttonPrice").on("click", function (event) {
     event.preventDefault();
     readXlsxFile(input.files[0], { schema }).then(({ rows, errors }) => {
+      //Function to review there are no duplicated contract
       for (let i = 0; i < rows.length; i++) {
         console.log(rows[i].item_no);
-
+        let validContract = [];
         $.get(
           `/find-a-current-price/${rows[i].item_no}/${rows[i].starting_date}/${rows[i].ending_date}`,
           () => {}
@@ -195,23 +196,27 @@ $(document).ready(function () {
               `The part number ${rows[i].item_no} has a valid contract. The file was not submitted. `
             );
             $("#fileError").append(newDiv);
+            validContract.push(rows[i].item_no);
             $("#input").val(null);
           }
           if (i === rows.length - 1) {
-            var formData = new FormData();
-            var file = document.getElementById("input").files[0];
-            formData.append("priceFile", file);
-            formData.append("UserId",userId);
-            $.ajax({
-              type: "POST",
-              url:"/fileupload",
-              data:formData,
-              processData:false,
-              contentType: false,
-              success: function(data){
-                notificationToast(data.alert, data.message);
-              }
-            })
+            if (validContract.length === 0) {
+              var formData = new FormData();
+              var file = document.getElementById("input").files[0];
+              formData.append("priceFile", file);
+              formData.append("UserId", userId);
+              $.ajax({
+                type: "POST",
+                url: "/fileupload",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (data) {
+                  $("#input").val(null);
+                  notificationToast(data.alert, data.message);
+                },
+              });
+            }
           }
         });
       }

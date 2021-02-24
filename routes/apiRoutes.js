@@ -10,6 +10,7 @@ const moment = require("moment-timezone");
 var fs = require("fs");
 var multer = require("multer");
 var upload = multer({ dest: "./priceFiles" });
+const readXlsxFile = require("read-excel-file/node");
 
 module.exports = function (app) {
   //User Signup
@@ -381,6 +382,7 @@ module.exports = function (app) {
       base_price: base_price,
       surcharge: surcharge,
       ItemId: ItemId,
+      confirmed:confirmed,
     })
       .then((data) => {
         if (!data) {
@@ -438,10 +440,11 @@ module.exports = function (app) {
   //Upload Price File from Supplier The key is priceFile
   app.post(
     "/fileupload",
-    upload.single("priceFile"),isAuthenticated,
+    upload.single("priceFile"),
+    isAuthenticated,
     function (req, res, next) {
       //console.log(req.file);
-      console.log(req.body)
+      console.log(req.body);
       const { UserId } = req.body;
       let originalName = req.file.originalname;
       let fileSplit = originalName.split(".");
@@ -477,42 +480,158 @@ module.exports = function (app) {
             })
             .catch((err) => {
               res.send({ message: "Server Error", alert: "Error", err: err });
-              console.log(err)
+              console.log(err);
             });
         }
       });
     }
   );
 
-  app.get("/download/:fileName",isAuthenticated, function (req, res) {
+  app.get("/download/:fileName", isAuthenticated, function (req, res) {
     const { fileName } = req.params;
     const file = `./priceFiles/${fileName}`;
-    res.download(file,`${fileName}`,function(err){
-      if (err){
-        res.send({message:"File not found",alert:"Error"})
-      }else{
-        console.log("Your file has been downloaded")
+    res.download(file, `${fileName}`, function (err) {
+      if (err) {
+        res.send({ message: "File not found", alert: "Error" });
+      } else {
+        //res.send({message:"File Downloaded",alert:"Success"})
+        console.log("Downloaded");
       }
     });
   });
 
   //Get Pending to Review Files
-  app.get("/get-pending-files",(req,res)=>{
+  app.get("/get-pending-files", isAuthenticated, (req, res) => {
     db.User.findAll({
-      include:[{
-        model:db.File,
-        where:{
-          status:"Submitted"
-        }
-      },{
-        model:db.Vendor
-      }],
-      
-    }).then((contracts)=>{
-      res.json(contracts)
-    }).catch((err)=>{
-      console.log(err)
+      include: [
+        {
+          model: db.File,
+          where: {
+            status: "Submitted",
+          },
+          order: [["createdAt", "DESC"]],
+        },
+        {
+          model: db.Vendor,
+        },
+      ],
     })
-  })
-};
+      .then((contracts) => {
+        res.json(contracts);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  });
 
+  //Approve File
+  app.put("/approve-file-price/:id", (req, res) => {
+    const { id } = req.params;
+    db.File.findOne({
+      where: {
+        id: id,
+      },
+    })
+      .then((data) => {
+        res.json(data);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  });
+
+  //Schema for excel file
+  const schema = {
+    "Part Number": {
+      prop: "item_no",
+      type: Number,
+      required: true,
+    },
+    "Starting Date": {
+      prop: "starting_date",
+      type: Date,
+      required: true,
+    },
+    "Ending Date": {
+      prop: "ending_date",
+      type: Date,
+      required: true,
+    },
+    "Base Price": {
+      prop: "base_price",
+      type: Number,
+      required: true,
+    },
+    Surcharge: {
+      prop: "surcharge",
+      type: Number,
+    },
+  };
+
+  //Approve File Validdation
+  app.get("/validate-price-file/:id", (req, res) => {
+    const { id } = req.params;
+    db.File.findOne({
+      where: {
+        id: id,
+      },
+    })
+      .then((data) => {
+        readXlsxFile(`./priceFiles/${data.file_name}`, { schema }).then(
+          ({ rows, errors }) => {
+            res.json(rows);
+          }
+        );
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  });
+
+  //Reject File
+  app.put("/reject-file-price/:id", (req, res) => {
+    const { status, comments } = req.body;
+    const { id } = req.params;
+    db.File.update(
+      {
+        comments: comments,
+        status: status,
+      },
+      {
+        where: {
+          id: id,
+        },
+      }
+    )
+      .then((fileUpdate) => {
+        if (fileUpdate[0] === 0) {
+          res.send({ message: "File not found to update", alert: "Error" });
+        } else {
+          res.send({
+            message: "File status updated successfully",
+            alert: "Success",
+          });
+        }
+      })
+      .catch((err) => {
+        res.send({ message: "Server error", alert: "Error" });
+        console.log(err);
+      });
+  });
+
+  //Get File Info by id
+  app.get("/get-file-info/:id", (req, res) => {
+    const { id } = req.params;
+    db.File.findOne({
+      where: {
+        id: id,
+      },
+    })
+      .then((data) => {
+        res.json(data);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  });
+};
