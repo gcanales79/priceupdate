@@ -501,7 +501,7 @@ module.exports = function (app) {
   });
 
   //Get Pending to Review Files
-  app.get("/get-pending-files", isAuthenticated, (req, res) => {
+  app.get("/get-pending-files", isAuthenticatedAdmin, (req, res) => {
     db.User.findAll({
       include: [
         {
@@ -525,7 +525,7 @@ module.exports = function (app) {
   });
 
   //Approve File
-  app.put("/approve-file-price/:id", (req, res) => {
+  app.put("/approve-file-price/:id",isAuthenticatedAdmin, (req, res) => {
     const { id } = req.params;
     db.File.findOne({
       where: {
@@ -568,8 +568,8 @@ module.exports = function (app) {
     },
   };
 
-  //Approve File Validdation
-  app.get("/validate-price-file/:id", (req, res) => {
+  //Approve File Validation
+  app.get("/validate-price-file/:id",isAuthenticatedAdmin, (req, res) => {
     const { id } = req.params;
     db.File.findOne({
       where: {
@@ -589,7 +589,7 @@ module.exports = function (app) {
   });
 
   //Reject File
-  app.put("/reject-file-price/:id", (req, res) => {
+  app.put("/reject-file-price/:id",isAuthenticatedAdmin, (req, res) => {
     const { status, comments } = req.body;
     const { id } = req.params;
     db.File.update(
@@ -620,7 +620,7 @@ module.exports = function (app) {
   });
 
   //Get File Info by id
-  app.get("/get-file-info/:id", (req, res) => {
+  app.get("/get-file-info/:id",isAuthenticated, (req, res) => {
     const { id } = req.params;
     db.File.findOne({
       where: {
@@ -634,4 +634,17 @@ module.exports = function (app) {
         console.log(err);
       });
   });
+
+  //Download the Price Format
+  app.get("/download-format",(req,res)=>{
+    const file = `./priceFiles/UpdatePriceFormatKatcon.xlsx`;
+    res.download(file, `UpdatePriceFormatKatcon.xlsx`, function (err) {
+      if (err) {
+        res.send({ message: "File not found", alert: "Error" });
+      } else {
+        //res.send({message:"File Downloaded",alert:"Success"})
+        console.log("Downloaded");
+      }
+    });
+  })
 };

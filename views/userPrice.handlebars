@@ -1,8 +1,9 @@
-<form class="row needs-validation prueba" id="submitPrice" method="post" enctype="multipart/form-data" novalidate>
-    <div>
-        <h2>Upload New Prices Excel File</h2>
-    </div>
-    <!--div class="col-md-6">
+<div class="container">
+    <form class="row needs-validation prueba" id="submitPrice" method="post" enctype="multipart/form-data" novalidate>
+        <div>
+            <h2>Upload New Prices Excel File</h2>
+        </div>
+        <!--div class="col-md-6">
         <label for="validationCustom04" class="form-label">Part Number</label>
         <select class="form-select" id="partNumber" required>
             <option selected disabled value="">Choose...</option>
@@ -61,15 +62,24 @@
         </div>
     </div-->
 
-    <div class="col-md-8" style="margin-top:20px">
-        <input type="file" id="input" name="priceFile" accept=".xlsx, .xls"/>
-    </div>
+        <div class="col-md-8" style="margin-top:20px">
+            <input type="file" id="input" name="priceFile" accept=".xlsx, .xls" />
+        </div>
 
 
-    <div class="col-md-4" style="margin-top:20px">
-        <button class="btn btn-primary" type="submit" id="buttonPrice" disabled>Submit File</button>
-    </div>
-    <div class="col-md-6" id="fileError">
+        <div class="col-md-4" style="margin-top:20px">
+            <button class="btn btn-primary" type="submit" id="buttonPrice" disabled>Submit File</button>
+        </div>
+        <div class="col-md-6" id="fileError">
 
+        </div>
+    </form>
+    <div class="row" style="margin-top:200px">
+        <div class="col-md-6" >
+            To download sample format click the button
+        </div>
+        <div class="col-md-2">
+        <button class="btn btn-primary" type="submit" id="formatFile"><i class="far fa-file-alt"></i></button>
+        </div>
     </div>
-</form>
+</div>

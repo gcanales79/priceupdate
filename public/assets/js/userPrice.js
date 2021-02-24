@@ -223,6 +223,12 @@ $(document).ready(function () {
     });
   });
 
+  $("#formatFile").click(function (event){
+    event.preventDefault();
+    window.open(`/download-format`)
+
+  })
+
   function notificationToast(result, message) {
     //console.log(message)
     //console.log("Entro")
