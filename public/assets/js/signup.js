@@ -21,7 +21,9 @@ $(document).ready(function () {
     loginUser(userData.email, userData.password);
     emailInput.val("");
     passwordInput.val("");
-    $("#loginForm").removeClass(".has-validation");
+    setTimeout(function() {
+      $("#loginForm").removeClass("was-validated")
+    },5)
   });
 
   // loginUser does a post to our "api/login" route and if successful, redirects us the the members page
