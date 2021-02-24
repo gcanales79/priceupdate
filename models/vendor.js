@@ -15,14 +15,15 @@ module.exports = function(sequelize, DataTypes) {
 
   Vendor.associate = function (models) {
     Vendor.belongsTo(models.User, {
-      foreignKey: {
-
-      },
+      foreignKey: "UserId",
     });
     Vendor.hasMany(models.Item,{
         foreignKey: {
             
         }
+    }),
+    Vendor.belongsTo(models.File,{
+      foreignKey: "UserId"
     })
 
   };

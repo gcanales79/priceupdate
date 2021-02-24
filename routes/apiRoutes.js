@@ -438,7 +438,7 @@ module.exports = function (app) {
   //Upload Price File from Supplier The key is priceFile
   app.post(
     "/fileupload",
-    upload.single("priceFile"),
+    upload.single("priceFile"),isAuthenticated,
     function (req, res, next) {
       //console.log(req.file);
       console.log(req.body)
@@ -484,7 +484,7 @@ module.exports = function (app) {
     }
   );
 
-  app.get("/download/:fileName", function (req, res) {
+  app.get("/download/:fileName",isAuthenticated, function (req, res) {
     const { fileName } = req.params;
     const file = `./priceFiles/${fileName}`;
     res.download(file,`${fileName}`,function(err){
@@ -495,5 +495,24 @@ module.exports = function (app) {
       }
     });
   });
+
+  //Get Pending to Review Files
+  app.get("/get-pending-files",(req,res)=>{
+    db.User.findAll({
+      include:[{
+        model:db.File,
+        where:{
+          status:"Submitted"
+        }
+      },{
+        model:db.Vendor
+      }],
+      
+    }).then((contracts)=>{
+      res.json(contracts)
+    }).catch((err)=>{
+      console.log(err)
+    })
+  })
 };
 

@@ -15,9 +15,14 @@ module.exports = function (sequelize, DataTypes) {
   });
 
   File.associate = function (models) {
-    File.belongsTo(models.User, {
-      foreignKey: {},
-    });
+
+    File.belongsTo(models.User,{
+      foreignKey:"UserId"
+    })
+    
+    File.hasMany(models.Vendor,{
+      foreignKey: "UserId",
+    })
   };
 
   return File;

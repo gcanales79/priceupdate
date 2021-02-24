@@ -54,6 +54,11 @@ module.exports = function(sequelize, DataTypes) {
 
     User.associate=function(models){
       User.hasMany(models.Vendor,{
+        foreignKey:"UserId"
+      })
+      
+      User.hasMany(models.File,{
+        foreignKey: "UserId"
       })
   }
 
