@@ -38,7 +38,7 @@ $(document).ready(function () {
         if (data.user_role === "user") {
           notificationToast(data.alert, data.message);
           localStorage.setItem("USERID", data.user_id);
-          window.location.href = "./";
+          window.location.href = "../";
         } else if (data.user_role === "admin") {
           notificationToast(data.alert, data.message);
           window.location.href = "./admin";

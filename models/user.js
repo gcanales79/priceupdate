@@ -27,6 +27,10 @@ module.exports = function(sequelize, DataTypes) {
         type:DataTypes.BOOLEAN,
         defaultValue:false
     },
+    emailConfirmation:{
+      type:DataTypes.BOOLEAN,
+      defaultValue:false
+    },
     resetPasswordToken:{
       type:DataTypes.STRING,
     },

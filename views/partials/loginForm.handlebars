@@ -27,5 +27,9 @@
                 </div> <!-- form-group// -->
             </form>
         </article>
+        <div class="col {{#if error}}alert alert-danger{{/if}} {{#if success}}alert alert-success{{/if}}" role="alert" id="alertArea" >
+            {{#if error}}{{error}}{{/if}}
+            {{#if success}}{{success}}{{/if}}
+        </div>
     </div> <!-- card.// -->
 </aside>

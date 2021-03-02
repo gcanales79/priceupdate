@@ -65,12 +65,12 @@ $(document).ready(function () {
     let pageNum = $(this).attr("page");
     event.preventDefault();
     $.get("/get-all-vendors", () => {}).then((vendors) => {
-      const {data}=vendors
-      for (let i=0;i<data.length;i++){
-          newOption=$("<option>")
-          newOption.val(data[i].vendor_no)
-          newOption.text(data[i].name)
-          $("#vendorInput").append(newOption)
+      const { data } = vendors;
+      for (let i = 0; i < data.length; i++) {
+        newOption = $("<option>");
+        newOption.val(data[i].vendor_no);
+        newOption.text(data[i].name);
+        $("#vendorInput").append(newOption);
       }
       //console.log(data);
       //console.log("Add vendor")
@@ -85,24 +85,24 @@ $(document).ready(function () {
   $("#addVendorForm").submit(function (event) {
     event.preventDefault();
     let vendor_no = $("#vendorInput").val();
-    let UserId=$(this).find("#confirmAddVendor").attr("value");
-    let pageNum=$(this).find("#confirmAddvendor").attr("page");
+    let UserId = $(this).find("#confirmAddVendor").attr("value");
+    let pageNum = $(this).find("#confirmAddvendor").attr("page");
     //console.log(vendor)
     if (vendor_no) {
-        let changes = {
-            UserId: UserId,
-          };
-          $.ajax({
-            url: `/add-user-to-vendor/${vendor_no}`,
-            type: "PUT",
-            contentType: "application/json",
-            data: JSON.stringify(changes),
-            success: function (data) {
-            $("#modalAddVendor").modal("hide");
-              notificationToast(data.alert, data.message);
-              paginationBlog(pageNum);
-            },
-          });
+      let changes = {
+        UserId: UserId,
+      };
+      $.ajax({
+        url: `/add-user-to-vendor/${vendor_no}`,
+        type: "PUT",
+        contentType: "application/json",
+        data: JSON.stringify(changes),
+        success: function (data) {
+          $("#modalAddVendor").modal("hide");
+          notificationToast(data.alert, data.message);
+          paginationBlog(pageNum);
+        },
+      });
     }
   });
 
@@ -152,6 +152,12 @@ $(document).ready(function () {
               let classActive = data[i].active
                 ? "btn btn-success activeUser"
                 : "btn btn-danger activeUser";
+              
+              if (data[i].emailConfirmation) {
+                buttonActive.prop("disabled",false);
+              }else{
+                buttonActive.prop("disabled", true);
+              }
               buttonActive.attr("class", classActive);
               buttonActive.attr("value", data[i].id);
               buttonActive.attr("page", pagination.pageNumber);
@@ -160,6 +166,10 @@ $(document).ready(function () {
               buttonActive.append(activeIcon);
               activeCol = $("<td>");
               activeCol.append(buttonActive);
+              //Email Confirm
+              emailConfirmCol = $("<td>");
+              let emailConfirm = data[i].emailConfirmation ? "Yes" : "No";
+              emailConfirmCol.text(emailConfirm);
               //Add Vendor Button
               buttonVendor = $("<button>");
               buttonVendor.attr("type", "button");
@@ -187,6 +197,7 @@ $(document).ready(function () {
               newRow.append(emailCol);
               newRow.append(vendorCol);
               newRow.append(activeCol);
+              newRow.append(emailConfirmCol);
               newRow.append(addVendorCol);
               newRow.append(deleteCol);
               $("#userTable").append(newRow);

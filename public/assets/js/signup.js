@@ -1,4 +1,6 @@
 $(document).ready(function () {
+  $("#alertArea").empty();
+  $("#alertArea").removeClass("alert alert-success")
   // Getting references to our form and inputs
   var loginForm = $("form.login");
   var emailInput = $("input#email-input");
@@ -34,10 +36,12 @@ $(document).ready(function () {
     }).then((data) => {
       //console.log(data);
       if (data.alert === "Success") {
-        notificationToast(data.alert, data.message);
+        //notificationToast(data.alert, data.message);
+        $("#alertArea").addClass("alert alert-success")
+        $("#alertArea").text(data.message)
         //localStorage.setItem("ACCESS_TOKEN", data.accessToken);
         //localStorage.setItem("REFRESH_TOKEN", data.refreshToken);
-        window.location.href = "./";
+        //window.location.href = "./";
       } else {
         notificationToast(data.alert, data.message);
       }

@@ -11,6 +11,10 @@ var fs = require("fs");
 var multer = require("multer");
 var upload = multer({ dest: "./priceFiles" });
 const readXlsxFile = require("read-excel-file/node");
+const crypto = require("crypto");
+var async = require("async");
+const sgMail = require("@sendgrid/mail");
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 module.exports = function (app) {
   //User Signup
@@ -30,34 +34,83 @@ module.exports = function (app) {
           alert: "Error",
         });
       }
-
       const { email, password, role } = req.body;
-
-      db.User.create({
-        email: email.toLowerCase(),
-        password: password,
-        role: role,
-      })
-        .then((data) => {
-          if (!data) {
+      async.waterfall(
+        [
+          function (done) {
+            //console.log("entro 1")
+            crypto.randomBytes(20, function (err, buf) {
+              var token = buf.toString("hex");
+              //console.log("El token es " + token)
+              done(err, token);
+            });
+          },
+          function (token, done) {
+            db.User.create({
+              email: email.toLowerCase(),
+              password: password,
+              role: role,
+              resetPasswordToken: token,
+              resetPasswordExpire: Date.now() + 7200000, //2 horas
+            })
+              .then((data, err) => {
+                console.log(err);
+                if (!data) {
+                  res.send({
+                    message: "Error while creating the user",
+                    alert: "Error",
+                  });
+                } else {
+                  done(err, token, data);
+                }
+              })
+              .catch((err) => {
+                //console.log(err);
+                res.send({
+                  message: "The user already exists",
+                  alert: "Error",
+                });
+              });
+          },
+          function (token, data, done) {
+            const msg = {
+              to: data.email, // Change to your recipient
+              from: "katcon.updateprices@katcon.com", // Change to your verified sender
+              //subject: 'Sending with SendGrid is Fun',
+              //text: 'and easy to do anywhere, even with Node.js',
+              //html: '<strong>and easy to do anywhere, even with Node.js</strong>',
+              template_id: "d-c47303c9884e43dfadd95cdf600de57f",
+              dynamic_template_data: {
+                link: `http://${req.headers.host}/confirm-email/${token}`,
+              },
+            };
+            sgMail
+              .send(msg)
+              .then((email, err) => {
+                console.log("Email sent");
+                done(err, "done");
+              })
+              .catch((err) => {
+                console.log(err);
+              });
+          },
+        ],
+        function (err, result) {
+          if (err) {
             res.send({
-              message: "Error while creating the user",
+              message: "Error while creating the user please try again",
               alert: "Error",
             });
-          } else {
+          }
+          if (result === "done") {
             res.send({
-              message: "User signup correctly",
+              message:
+                "User created successfully please activate your account by clicking on the email that was send to you. Please check your junk email inbox.",
               alert: "Success",
             });
           }
-        })
-        .catch((err) => {
-          //console.log(err)
-          res.send({
-            message: "The user already exists",
-            alert: "Error",
-          });
-        });
+        }
+      );
     }
   );
 
@@ -92,6 +145,8 @@ module.exports = function (app) {
     req.logout();
     res.redirect("/");
   });
+
+  
 
   //Get all users
   app.get("/get-all-users", isAuthenticatedAdmin, (req, res) => {
@@ -382,7 +437,7 @@ module.exports = function (app) {
       base_price: base_price,
       surcharge: surcharge,
       ItemId: ItemId,
-      confirmed:confirmed,
+      confirmed: confirmed,
     })
       .then((data) => {
         if (!data) {
@@ -525,7 +580,7 @@ module.exports = function (app) {
   });
 
   //Approve File
-  app.put("/approve-file-price/:id",isAuthenticatedAdmin, (req, res) => {
+  app.put("/approve-file-price/:id", isAuthenticatedAdmin, (req, res) => {
     const { id } = req.params;
     db.File.findOne({
       where: {
@@ -569,7 +624,7 @@ module.exports = function (app) {
   };
 
   //Approve File Validation
-  app.get("/validate-price-file/:id",isAuthenticatedAdmin, (req, res) => {
+  app.get("/validate-price-file/:id", isAuthenticatedAdmin, (req, res) => {
     const { id } = req.params;
     db.File.findOne({
       where: {
@@ -589,7 +644,7 @@ module.exports = function (app) {
   });
 
   //Reject File
-  app.put("/reject-file-price/:id",isAuthenticatedAdmin, (req, res) => {
+  app.put("/reject-file-price/:id", isAuthenticatedAdmin, (req, res) => {
     const { status, comments } = req.body;
     const { id } = req.params;
     db.File.update(
@@ -620,7 +675,7 @@ module.exports = function (app) {
   });
 
   //Get File Info by id
-  app.get("/get-file-info/:id",isAuthenticated, (req, res) => {
+  app.get("/get-file-info/:id", isAuthenticated, (req, res) => {
     const { id } = req.params;
     db.File.findOne({
       where: {
@@ -636,7 +691,7 @@ module.exports = function (app) {
   });
 
   //Download the Price Format
-  app.get("/download-format",(req,res)=>{
+  app.get("/download-format", (req, res) => {
     const file = `./priceFiles/UpdatePriceFormatKatcon.xlsx`;
     res.download(file, `UpdatePriceFormatKatcon.xlsx`, function (err) {
       if (err) {
@@ -646,5 +701,5 @@ module.exports = function (app) {
         console.log("Downloaded");
       }
     });
-  })
+  });
 };
